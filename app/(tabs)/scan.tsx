@@ -1,8 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ThemedView } from "../../components/ThemedView";
-import { ThemedText } from "../../components/ThemedText";
 import { ScannerCamera } from "../../components/Scanner/Camera";
 
 const STORAGE_KEY = "@ecoz:scanned_products";
@@ -34,28 +32,26 @@ export default function ScanScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <ScannerCamera onCodeScanned={handleBarcodeScan} />
-      <ThemedView style={styles.overlay}>
-        <ThemedText style={styles.overlayText}>
-          Scan a product barcode
-        </ThemedText>
-      </ThemedView>
-    </ThemedView>
+      <View style={styles.overlay}>
+        <Text style={styles.overlayText}>Scan a product barcode</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: "#fff",
   },
   overlay: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     padding: 20,
     alignItems: "center",
   },
@@ -63,5 +59,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     textAlign: "center",
+    fontWeight: "500",
   },
 });

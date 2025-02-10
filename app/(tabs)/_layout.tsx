@@ -1,24 +1,22 @@
 import { Tabs } from "expo-router";
 import { StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { useThemeColor } from "../../hooks/useThemeColor";
 
 export default function TabLayout() {
-  const backgroundColor = useThemeColor({}, "background");
-  const tintColor = useThemeColor({}, "tint");
-
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: {
           ...styles.tabBar,
-          backgroundColor,
+          backgroundColor: "#fff",
         },
-        tabBarActiveTintColor: tintColor,
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "rgba(0, 0, 0, 0.4)",
         headerStyle: {
-          backgroundColor,
+          backgroundColor: "#fff",
         },
-        headerTintColor: tintColor,
+        headerTintColor: "#000",
+        headerShadowVisible: false,
       }}
     >
       <Tabs.Screen
@@ -48,6 +46,6 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(128, 128, 128, 0.2)",
+    borderTopColor: "rgba(0, 0, 0, 0.1)",
   },
 });

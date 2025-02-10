@@ -1,8 +1,6 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { Camera, CameraView, PermissionResponse } from "expo-camera";
 import { useCallback, useEffect, useState } from "react";
-import { ThemedView } from "../ThemedView";
-import { ThemedText } from "../ThemedText";
 
 interface ScannerCameraProps {
   onCodeScanned: (data: string) => void;
@@ -28,34 +26,31 @@ export function ScannerCamera({ onCodeScanned }: ScannerCameraProps) {
     },
     [isScanning, onCodeScanned]
   );
-
   if (hasPermission === null) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.permissionContainer}>
-          <ThemedText>Requesting camera permission...</ThemedText>
-        </ThemedView>
-      </ThemedView>
+      <View style={styles.container}>
+        <View style={styles.center}>
+          <Text style={styles.text}>Requesting camera permission...</Text>
+        </View>
+      </View>
     );
   }
 
   if (hasPermission === false) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.permissionContainer}>
+      <View style={styles.container}>
+        <View style={styles.center}>
           <TouchableOpacity
-            style={styles.permissionButton}
+            style={styles.button}
             onPress={async () => {
               const { status } = await Camera.requestCameraPermissionsAsync();
               setHasPermission(status === "granted");
             }}
           >
-            <ThemedText style={styles.permissionText}>
-              Grant Camera Permission
-            </ThemedText>
+            <Text style={styles.buttonText}>Grant Camera Permission</Text>
           </TouchableOpacity>
-        </ThemedView>
-      </ThemedView>
+        </View>
+      </View>
     );
   }
 
@@ -74,22 +69,28 @@ export function ScannerCamera({ onCodeScanned }: ScannerCameraProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#000",
   },
   camera: {
     flex: 1,
   },
-  permissionContainer: {
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  permissionButton: {
+  text: {
+    color: "white",
+    fontSize: 16,
+  },
+  button: {
     padding: 20,
     backgroundColor: "#007AFF",
     borderRadius: 10,
   },
-  permissionText: {
-    color: "#FFFFFF",
+  buttonText: {
+    color: "white",
     fontSize: 16,
+    fontWeight: "600",
   },
 });
