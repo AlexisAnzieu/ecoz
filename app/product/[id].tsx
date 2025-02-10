@@ -63,14 +63,30 @@ export default function ProductScreen() {
   };
 
   const isScoreHighlighted = useSharedValue(false);
-  const detailsExpanded = useSharedValue(false);
+  const detailsExpanded = useSharedValue(true);
   const compareMode = useSharedValue(false);
+  const scrollY = useSharedValue(0);
 
   const detailsStyle = useAnimatedStyle(() => ({
-    height: withSpring(detailsExpanded.value ? "auto" : 0, {
-      damping: 15,
+    transform: [
+      {
+        translateY: withSpring(detailsExpanded.value ? 0 : 50, {
+          damping: 15,
+        }),
+      },
+    ],
+    opacity: withTiming(detailsExpanded.value ? 1 : 0, {
+      duration: 300,
     }),
-    opacity: withSpring(detailsExpanded.value ? 1 : 0),
+  }));
+
+  const headerStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: withSpring(-Math.min(scrollY.value * 0.3, 20)),
+      },
+    ],
+    shadowOpacity: withSpring(Math.min(scrollY.value * 0.003, 0.25)),
   }));
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -85,9 +101,15 @@ export default function ProductScreen() {
 
   return (
     <View style={styles.container}>
-      <AnimatedScrollView style={containerStyle}>
+      <AnimatedScrollView
+        style={containerStyle}
+        onScroll={({ nativeEvent }) => {
+          scrollY.value = nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
+      >
         <AnimatedLayout delay={0}>
-          <View style={styles.header}>
+          <AnimatedView style={[styles.header, headerStyle]}>
             <Text style={styles.productName}>{product.name}</Text>
             <View style={styles.scoreContainer}>
               <EcoScoreIndicator
@@ -95,33 +117,80 @@ export default function ProductScreen() {
                 highlighted={isScoreHighlighted.value}
               />
             </View>
-          </View>
+          </AnimatedView>
         </AnimatedLayout>
 
         <AnimatedLayout delay={200}>
           <AnimatedView style={[styles.section, detailsStyle]}>
             <Text style={styles.sectionTitle}>Environmental Impact</Text>
-            <Text style={styles.detail}>
-              CO2 Emission: {product.co2Emission}
-            </Text>
-            <Text style={styles.detail}>
-              Recyclable: {product.recyclable ? "Yes ✓" : "No ✗"}
-            </Text>
-            <Text style={styles.detail}>
-              Sustainable Sourcing:{" "}
-              {product.sustainableSourcing ? "Yes ✓" : "No ✗"}
-            </Text>
-            <Text style={styles.detail}>Packaging: {product.packaging}</Text>
+            <View style={styles.grid}>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>CO2 Emission</Text>
+                <View style={styles.gridValueContainer}>
+                  <Text style={styles.gridValue}>{product.co2Emission}</Text>
+                </View>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Recyclable</Text>
+                <View
+                  style={[
+                    styles.gridValueContainer,
+                    product.recyclable
+                      ? styles.positiveValue
+                      : styles.negativeValue,
+                  ]}
+                >
+                  <Text style={[styles.gridValue, styles.iconText]}>
+                    {product.recyclable ? "Yes ✓" : "No ✗"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Sustainable</Text>
+                <View
+                  style={[
+                    styles.gridValueContainer,
+                    product.sustainableSourcing
+                      ? styles.positiveValue
+                      : styles.negativeValue,
+                  ]}
+                >
+                  <Text style={[styles.gridValue, styles.iconText]}>
+                    {product.sustainableSourcing ? "Yes ✓" : "No ✗"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Packaging</Text>
+                <View style={styles.gridValueContainer}>
+                  <Text style={styles.gridValue}>{product.packaging}</Text>
+                </View>
+              </View>
+            </View>
           </AnimatedView>
         </AnimatedLayout>
 
         <AnimatedLayout delay={400}>
           <AnimatedView style={[styles.section, detailsStyle]}>
             <Text style={styles.sectionTitle}>Tips for Eco-friendly Use</Text>
-            <Text style={styles.detail}>
-              • Proper recycling instructions{"\n"}• Alternative eco-friendly
-              products{"\n"}• Ways to reduce environmental impact
-            </Text>
+            <View style={styles.tipsGrid}>
+              <View style={styles.tipItem}>
+                <Text style={styles.tipTitle}>Recycling</Text>
+                <Text style={styles.tipText}>
+                  Proper recycling instructions
+                </Text>
+              </View>
+              <View style={styles.tipItem}>
+                <Text style={styles.tipTitle}>Alternatives</Text>
+                <Text style={styles.tipText}>Eco-friendly product options</Text>
+              </View>
+              <View style={styles.tipItem}>
+                <Text style={styles.tipTitle}>Impact</Text>
+                <Text style={styles.tipText}>
+                  Ways to reduce environmental impact
+                </Text>
+              </View>
+            </View>
           </AnimatedView>
         </AnimatedLayout>
       </AnimatedScrollView>
@@ -144,11 +213,11 @@ export default function ProductScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
   header: {
-    padding: 24,
-    backgroundColor: "#fff",
+    padding: 32,
+    backgroundColor: "#ffffff",
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     shadowColor: "#000",
@@ -159,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   productName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
@@ -172,30 +241,83 @@ const styles = StyleSheet.create({
   section: {
     margin: 16,
     padding: 20,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.1)",
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
     elevation: 3,
     overflow: "hidden",
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "600",
     marginBottom: 16,
-    color: "#000",
+    color: "#2c3e50",
   },
-  detail: {
-    fontSize: 16,
-    marginBottom: 12,
-    lineHeight: 24,
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    margin: -8,
+  },
+  gridItem: {
+    width: "50%",
+    padding: 8,
+  },
+  gridLabel: {
+    fontSize: 14,
+    color: "#6c757d",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  gridValueContainer: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
     padding: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+  gridValue: {
+    fontSize: 15,
+    color: "#212529",
+    textAlign: "center",
+  },
+  iconText: {
+    fontWeight: "600",
+  },
+  positiveValue: {
+    backgroundColor: "#e8f5e9",
+    borderColor: "#c8e6c9",
+  },
+  negativeValue: {
+    backgroundColor: "#ffebee",
+    borderColor: "#ffcdd2",
+  },
+  tipsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    margin: -8,
+  },
+  tipItem: {
+    width: "33.33%",
+    padding: 8,
+  },
+  tipTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2c3e50",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  tipText: {
+    fontSize: 13,
+    color: "#495057",
+    textAlign: "center",
+    backgroundColor: "#f8f9fa",
+    padding: 8,
     borderRadius: 8,
-    color: "#000",
+    borderWidth: 1,
+    borderColor: "#e9ecef",
   },
 });
